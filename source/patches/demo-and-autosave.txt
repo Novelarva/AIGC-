@@ -1,0 +1,178 @@
+<style id="mb-patch-style">
+#mb-demo-btn{position:fixed;right:16px;bottom:16px;z-index:2147483000;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border:2.5px solid #0b1b3a;border-radius:6px 16px 6px 16px;background:#ffd429;color:#0b1b3a;font:800 14px/1 'PingFang SC','Microsoft YaHei',system-ui,sans-serif;cursor:pointer;box-shadow:5px 6px 0 rgba(11,27,58,.22);transition:transform .12s ease}
+#mb-demo-btn:hover{transform:translateY(-2px) rotate(-.6deg)}
+#mb-demo-btn:active{transform:translateY(1px);box-shadow:2px 2px 0 rgba(11,27,58,.22)}
+#mb-save-tip{position:fixed;right:16px;bottom:66px;z-index:2147483000;padding:6px 11px;border-radius:999px;background:rgba(11,27,58,.88);color:#fff;font:600 11px/1 'PingFang SC',system-ui,sans-serif;opacity:0;transform:translateY(4px);transition:opacity .2s,transform .2s;pointer-events:none}
+#mb-save-tip.on{opacity:1;transform:none}.lib-card[data-mb-id="piano"]{background:linear-gradient(160deg,#e8f0ff 0%,#f9fbff 72%);color:#3f5ae0}.lib-card[data-mb-id="piano2"]{background:linear-gradient(160deg,#ece5ff 0%,#faf7ff 72%);color:#5b3fd6}.lib-card[data-mb-id="piano3"]{background:linear-gradient(160deg,#fff0cd 0%,#fffcf3 72%);color:#b8860b}.lib-card.has-sticker[data-mb-label]::after{content:attr(data-mb-label);position:absolute;left:7px;bottom:6px;padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.93);border:1.5px solid currentColor;color:inherit;font-size:9px;font-weight:800;letter-spacing:.4px;line-height:1;pointer-events:none}
+</style>
+<script>
+(function () {
+  "use strict";
+  if (window.__MB_PATCHED__) return;
+  window.__MB_PATCHED__ = true;
+  function aliasStickers() {
+    if (!window.__STK) return false;
+    ["piano2", "piano3"].forEach(function (k) { if (!window.__STK[k] && window.__STK.piano) window.__STK[k] = window.__STK.piano; });
+    return true;
+  }
+
+  var KEY = "musicblocks.project.v1";
+  var MAX_PAGE = 8;
+
+  /* ---------- 小工具 ---------- */
+  function tip(msg, ms) {
+    var el = document.getElementById("mb-save-tip");
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add("on");
+    clearTimeout(tip._t);
+    tip._t = setTimeout(function () { el.classList.remove("on"); }, ms || 1600);
+  }
+
+  function chip(page, lane, col, id) {
+    return { instanceId: "demo-" + page + "-" + lane + "-" + col, blockId: id, lane: lane, col: col, page: page };
+  }
+
+  /* 示例作品：2 页、每页 4 拍（8 步），共 32 块，点播放即可听 */
+  var PRESET = [
+    chip(0, 2, 0, "kick"), chip(0, 2, 4, "kick"), chip(0, 2, 2, "snare"), chip(0, 2, 6, "snare"),
+    chip(0, 2, 1, "hat"), chip(0, 2, 3, "hat"), chip(0, 2, 5, "hat"), chip(0, 2, 7, "hat"),
+    chip(0, 1, 0, "bass"), chip(0, 1, 4, "bass"), chip(0, 1, 2, "synth"), chip(0, 1, 6, "synth"),
+    chip(0, 0, 0, "piano"), chip(0, 0, 3, "piano"), chip(0, 0, 6, "piano"), chip(0, 0, 5, "bell"),
+    chip(1, 2, 0, "kick"), chip(1, 2, 4, "kick"), chip(1, 2, 2, "snare"), chip(1, 2, 6, "snare"),
+    chip(1, 2, 1, "hat"), chip(1, 2, 3, "hat"), chip(1, 2, 5, "hat"), chip(1, 2, 7, "hat"),
+    chip(1, 1, 0, "bass"), chip(1, 1, 4, "bass"), chip(1, 1, 3, "synth"), chip(1, 1, 7, "synth"),
+    chip(1, 0, 1, "piano"), chip(1, 0, 4, "piano"), chip(1, 0, 7, "piano"), chip(1, 0, 2, "bell")
+  ];
+
+  function tagPianoCards() {
+    var cards = document.querySelectorAll(".lib-card.has-sticker");
+    for (var i = 0; i < cards.length; i++) {
+      var img = cards[i].querySelector("img.icon-sticker");
+      if (!img) continue;
+      var alt = img.getAttribute("alt") || "";
+      var id = "", label = "";
+      if (alt === "Piano") { id = "piano"; label = "明亮"; }
+      else if (alt.indexOf("夜曲") >= 0) { id = "piano2"; label = "夜曲"; }
+      else if (alt.indexOf("上行") >= 0) { id = "piano3"; label = "上行"; }
+      if (id) { cards[i].setAttribute("data-mb-id", id); cards[i].setAttribute("data-mb-label", label); }
+    }
+  }
+
+  /* ---------- 自动保存 ---------- */
+  function boot(S) {
+    var restored = false;
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var d = JSON.parse(raw);
+        if (d && Array.isArray(d.placed) && d.placed.length) {
+          S.setState({
+            placed: d.placed.map(function (p, i) {
+              return {
+                instanceId: p.instanceId || ("restored-" + i + "-" + Date.now()),
+                blockId: p.blockId,
+                lane: Math.max(0, Math.min(2, p.lane | 0)),
+                col: Math.max(0, Math.min(7, p.col | 0)),
+                page: Math.max(0, Math.min(MAX_PAGE - 1, p.page | 0))
+              };
+            }),
+            projectName: typeof d.projectName === "string" && d.projectName ? d.projectName : "My Music",
+            page: Math.max(0, Math.min(MAX_PAGE - 1, d.page | 0))
+          });
+          restored = true;
+        }
+      }
+    } catch (e) { /* 存档损坏就当没有 */ }
+
+    var lastKey = "";
+    var timer = 0;
+    S.subscribe(function (st) {
+      if (!restored && st.placed.length === 0) return;
+      restored = true;
+      var key = st.projectName + "|" + st.page + "|" + st.placed.length + "|" +
+        st.placed.map(function (p) { return p.instanceId + p.blockId + p.lane + p.col + p.page; }).join(",");
+      if (key === lastKey) return;   /* 播放时 activeIds 每步都在变，不跟着写盘 */
+      lastKey = key;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        try {
+          localStorage.setItem(KEY, JSON.stringify({ v: 1, placed: st.placed, projectName: st.projectName, page: st.page }));
+          tip("已自动保存", 1000);
+        } catch (e) {
+          tip("自动保存失败：浏览器存储已满", 2200);
+        }
+      }, 250);
+    });
+  }
+
+  /* ---------- 一键示例 ---------- */
+  function ensureCanvas(done) {
+    if (document.querySelector(".canvas-grid")) return done();
+    var back = document.querySelector(".section-frame__back");
+    if (back) back.click();
+    try { window.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter" })); } catch (e) {}
+    var n = 0;
+    var t = setInterval(function () {
+      if (document.querySelector(".canvas-grid")) { clearInterval(t); return done(); }
+      var card = document.querySelector(".home-card--create");
+      if (card && !card.__mbClicked) { card.__mbClicked = true; card.click(); }
+      if (++n > 45) { clearInterval(t); done(); }
+    }, 120);
+  }
+
+  function loadDemo() {
+    ensureCanvas(function () {
+      var S = window.__MB_STORE__;
+      if (!S) { tip("页面还没准备好，请稍等一秒再点", 2000); return; }
+      var st = S.getState();
+      if (st.placed.length && !window.confirm("将用示例作品替换当前画布，继续？")) return;
+      var stamp = Date.now();
+      var next = PRESET.map(function (p, i) {
+        return { instanceId: p.instanceId + "-" + stamp + "-" + i, blockId: p.blockId, lane: p.lane, col: p.col, page: p.page };
+      });
+      S.setState({ placed: next, projectName: "示例 · 夜色列车", page: 0 });
+      tip("已载入示例：2 页共 16 拍，点播放试试", 2400);
+    });
+  }
+
+  /* ---------- 挂按钮 ---------- */
+  function mount() {
+    if (document.getElementById("mb-demo-btn")) return;
+    var tipEl = document.createElement("div");
+    tipEl.id = "mb-save-tip";
+    document.body.appendChild(tipEl);
+
+    var b = document.createElement("button");
+    b.id = "mb-demo-btn";
+    b.type = "button";
+    b.textContent = "✨ 载入示例作品";
+    b.title = "一键放好 2 页 16 拍的示例，点播放即可试听";
+    b.addEventListener("click", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      loadDemo();
+    });
+    document.body.appendChild(b);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mount);
+  } else {
+    mount();
+  }
+
+  aliasStickers();
+  tagPianoCards();
+  setInterval(tagPianoCards, 800);
+  setTimeout(aliasStickers, 300);
+
+  /* ---------- 等 React 把 store 挂出来 ---------- */
+  var tries = 0;
+  var wait = setInterval(function () {
+    if (window.__MB_STORE__) { clearInterval(wait); boot(window.__MB_STORE__); return; }
+    if (++tries > 200) clearInterval(wait);
+  }, 100);
+})();
+
+</script>
