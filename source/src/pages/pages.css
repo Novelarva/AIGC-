@@ -1,0 +1,1038 @@
+/* ══════════════════════════════════════════════════════════════
+   Cover（封面）+ Home（首页）
+   —— 独立于创作界面的样式，全部用 .cover-* / .home-* 前缀，
+      避免影响 styles.css 里已有的创作界面。
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 舞台：按设计稿比例等比缩放，永远居中、不裁切 ── */
+.stage-wrap {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  /* 留白底色随画面切换：封面=品牌蓝，首页=底图边缘奶白，看起来像设计留白而非“没铺满” */
+  background: #f6f7f6;
+}
+
+.stage-wrap:has(.stage--cover) {
+  background: var(--blue);
+}
+
+.stage-wrap:has(.stage--home) {
+  background: #f6f7f6 url("/home/bg-side-clean.jpg") center / cover no-repeat;
+}
+
+.stage {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+/* 封面 1440×900 · 首页 1440×1024（与美工设计稿一致） */
+.stage--cover {
+  width: min(100vw, calc(100vh * 1440 / 900));
+  aspect-ratio: 1440 / 900;
+}
+
+/* 首页：铺满整个视口（用 dvh 对齐真实可见高度，避开地址栏/快捷栏占用） */
+.stage--home {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* UI 画布：固定 1440×1024 设计比例、contain 居中。
+   所有可交互元素都放进这个画布，按比例缩放、永不变形（不会被拉伸压扁）。
+   背景与音符是满屏铺底，单独放在画布之外，不受比例影响。 */
+.home-ui {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(100vw, calc(100dvh * 1440 / 1024));
+  aspect-ratio: 1440 / 1024;
+  z-index: 10;
+  container-type: size;
+}
+
+/* ══════════════════ 1. 封面 Cover ══════════════════ */
+
+.cover {
+  position: absolute;
+  inset: 0;
+  background: var(--blue);
+  overflow: hidden;
+  font-family: var(--font-body);
+}
+
+.cover-inner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  text-align: center;
+}
+
+/* 标题 BLOCK MUSIC —— 位置/字号按设计稿像素量出（cap 顶 362，字高 99，宽 536） */
+.cover-title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 286px;
+  font-family: var(--font-display);
+  font-size: 108px;
+  line-height: 1;
+  letter-spacing: 0.4px;
+  color: #fff;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* 副标：字号由字高定（18.1px），字距由宽度定（2.9px）
+   padding-left 用于抵消 letter-spacing 在末字后留下的空档
+   （字距会把视觉中心整体推左 ~半倍字距，设计稿实测中心在 723。加 10px 左内边距
+     让居中后的视觉中心正好右移 5px 对齐） */
+.cover-tagline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 497px;
+  padding-left: 10px;
+  font-size: 18.1px;
+  font-weight: 700;
+  letter-spacing: 2.9px;
+  color: var(--yellow);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.cover-version {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 540px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.72);
+  user-select: none;
+}
+
+/* 「点击任意按键进入」—— 忽闪忽闪 */
+.cover-prompt {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 84px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  color: rgba(255, 255, 255, 0.88);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  animation: cover-blink 1.5s ease-in-out infinite;
+  user-select: none;
+}
+
+@keyframes cover-blink {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+/* 封面自身在转场时的收束动作 */
+.cover--leaving {
+  animation: cover-leave 460ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes cover-leave {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.055);
+    opacity: 0;
+  }
+}
+
+/* ── 快门闪白：整屏白场，像相机快门帘扫过 ── */
+.shutter-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  background: #fdfdfd;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.shutter-flash--on {
+  animation: shutter 620ms ease-out forwards;
+}
+
+@keyframes shutter {
+  0% {
+    opacity: 0;
+  }
+  26% {
+    opacity: 1;
+  }
+  38% {
+    opacity: 0.96;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ══════════════════ 2. 首页 Home ══════════════════ */
+
+.home {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.home-enter {
+  animation: home-enter 620ms cubic-bezier(0.16, 0.84, 0.28, 1) both;
+}
+
+@keyframes home-enter {
+  from {
+    transform: scale(1.045);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 整屏底图：美工的"左右装饰 + 中间留白"图，cover 铺满、不裁变形 */
+.home-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* 标题块：从旧设计稿抠出，object-fit contain 保证不变形 */
+.home-title {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  object-position: center;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 0 rgba(11, 27, 58, 0.06));
+}
+
+/* ── 三张卡片：用美工交付的原始 PNG，按匹配到的坐标贴回原位 ── */
+/* 关键：overflow 必须可见 —— 卡片四周有超出纸体的贴纸和透明留白 */
+.home-card {
+  position: absolute;
+  display: block;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  overflow: visible;
+  transform-origin: center;
+  transition: transform 200ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* 悬停：只改 transform（按美工规范：不动 width/height/margin/布局） */
+.home-card--music-wall:hover,
+.home-card--music-wall:focus-visible {
+  transform: scale(1.05) rotate(-2deg);
+}
+.home-card--create:hover,
+.home-card--create:focus-visible {
+  transform: scale(1.05) rotate(2deg);
+}
+.home-card--community:hover,
+.home-card--community:focus-visible {
+  transform: scale(1.05) rotate(-1.5deg);
+}
+
+.home-card:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+.home-card--pressed {
+  transform: scale(0.985) rotate(0deg) !important;
+  transition: transform 90ms ease-out;
+}
+
+/* ── 音符层（7 个音符，轻轻摇摆；各自错开相位，不然会像体操） ──
+   关键：这层与底图同为 16:9 且按 `cover` 覆盖视口（width/height 取 max），
+   因此它的坐标变换和 .home-bg 的 `object-fit: cover` 完全一致 ——
+   音符按底图自身坐标(1920×1080)定位，就能跨屏幕比例都精确落在美工原位。 */
+.home-notes {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max(100vw, calc(100dvh * 16 / 9));
+  height: max(100dvh, calc(100vw * 9 / 16));
+  z-index: 5;
+  pointer-events: none;
+}
+
+.home-note {
+  position: absolute;
+  display: block;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  transform-origin: 50% 62%; /* 以音符"脚下"为轴，摇起来自然 */
+  animation: note-sway var(--sway-dur, 4.2s) ease-in-out infinite;
+  animation-delay: var(--sway-delay, 0s);
+}
+
+@keyframes note-sway {
+  0%,
+  100% {
+    transform: rotate(-6deg) translateY(0);
+  }
+  50% {
+    transform: rotate(6deg) translateY(-5px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-note,
+  .cover-prompt {
+    animation: none;
+  }
+}
+
+/* ── 旋转光碟 + 音量面板 ── */
+.home-disc {
+  position: relative;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(2px 3px 0 rgba(11, 27, 58, 0.28));
+}
+
+.home-disc-disc {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+  animation: disc-spin 9s linear infinite;
+  transform-origin: 50% 50%;
+  /* 纯 CSS 画一张黑胶：黑盘 + 一圈圈纹路 + 中心标签 + 高光 */
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.5) 0 2%, transparent 34%),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      rgba(255, 255, 255, 0.07) 0 1px,
+      transparent 1px 3px
+    ),
+    radial-gradient(circle at 50% 50%, #1b1b1f 0 62%, #0b0b0e 63% 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.home-disc-label {
+  position: absolute;
+  width: 33%;
+  height: 33%;
+  border-radius: 50%;
+  background: var(--blue);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: calc(var(--disc-size, 64px) * 0.17);
+  letter-spacing: 0.4px;
+  pointer-events: none;
+}
+
+.home-disc-hole {
+  position: absolute;
+  width: 7%;
+  height: 7%;
+  border-radius: 50%;
+  background: #f5f5f5;
+  pointer-events: none;
+}
+
+@keyframes disc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.home-disc:hover .home-disc-disc {
+  animation-duration: 3.4s;
+}
+
+.home-disc--off .home-disc-disc {
+  animation-play-state: paused;
+  filter: saturate(0.4) brightness(0.85);
+}
+
+/* 右上角交互簇：音量光碟 + 我的头像 + 昵称（flex 一行，靠右，永不出界） */
+.home-topright {
+  position: absolute;
+  top: 1%;
+  right: 1.5%;
+  z-index: 22;
+  display: flex;
+  align-items: center;
+  gap: 0.7cqw;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-disc-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+/* 音量面板 */
+.home-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 232px;
+  padding: 14px 15px 13px;
+  background: var(--paper-2);
+  border: 2.5px solid var(--ink);
+  border-radius: 4px 14px 4px 16px;
+  box-shadow: 5px 6px 0 rgba(11, 27, 58, 0.2);
+  font-family: var(--font-body);
+  animation: panel-in 180ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.home-panel::before {
+  /* 指向光碟的小尖角 */
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 26px;
+  width: 14px;
+  height: 14px;
+  background: var(--paper-2);
+  border-left: 2.5px solid var(--ink);
+  border-top: 2.5px solid var(--ink);
+  transform: rotate(45deg);
+}
+
+.home-panel-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  letter-spacing: 1px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+
+.home-panel-sub {
+  font-size: 10.5px;
+  color: var(--ink-3);
+  margin-bottom: 10px;
+  letter-spacing: 0.2px;
+}
+
+.home-panel-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.home-panel-ico {
+  font-size: 14px;
+  line-height: 1;
+  width: 16px;
+  text-align: center;
+  color: var(--ink-2);
+}
+
+/* 音量滑杆 */
+.home-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1;
+  height: 8px;
+  border-radius: 5px;
+  border: 2px solid var(--ink);
+  background: linear-gradient(
+    to right,
+    var(--blue) 0,
+    var(--blue) var(--fill, 34%),
+    #fff var(--fill, 34%),
+    #fff 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.home-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  cursor: grab;
+}
+
+.home-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  cursor: grab;
+}
+
+.home-panel-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+  width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.home-panel-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.home-btn {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 7px 6px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.home-btn:hover {
+  background: var(--blue-soft);
+}
+
+.home-btn:active {
+  transform: translateY(1px);
+}
+
+.home-btn--on {
+  background: var(--yellow);
+}
+
+.home-btn--on:hover {
+  background: #ffdf5e;
+}
+
+/* ── 右上角 MB 头像：点开改昵称 / 头像 ── */
+.home-avatar {
+  position: relative;
+  z-index: 22;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.2, 0.9, 0.3, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-avatar:hover,
+.home-avatar:focus-visible {
+  transform: scale(1.07) rotate(-2deg);
+}
+
+.home-avatar:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 5px;
+  border-radius: 50%;
+}
+
+.home-avatar-ring {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #121216;
+  border: 3px solid var(--ink);
+  box-shadow: 3px 4px 0 rgba(11, 27, 58, 0.28);
+}
+
+.home-avatar-ring img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+}
+
+.home-avatar-mb {
+  font-family: var(--font-display);
+  letter-spacing: 0.5px;
+  color: #fff;
+  line-height: 1;
+  user-select: none;
+}
+
+.home-avatar--set .home-avatar-ring {
+  background: #fff;
+}
+
+/* ── 昵称（显示在头像右侧，无底色、黑色字） ── */
+.home-nick {
+  z-index: 21;
+  max-width: 14cqw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  pointer-events: none;
+}
+
+/* ── 「敬请期待」小贴纸 ── */
+.home-toast {
+  position: absolute;
+  z-index: 60;
+  padding: 11px 16px;
+  background: var(--yellow);
+  color: var(--ink);
+  border: 2.5px solid var(--ink);
+  border-radius: 3px 12px 3px 12px;
+  box-shadow: 4px 5px 0 rgba(11, 27, 58, 0.22);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  transform: translate(-50%, -50%) rotate(-1.6deg);
+  animation: toast-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1) both;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-1.6deg) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(-1.6deg) scale(1);
+  }
+}
+
+/* ── 音乐墙：设计稿预览浮层（页面尚未开发） ── */
+.home-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  background: rgba(11, 27, 58, 0.72);
+  display: grid;
+  place-items: center;
+  padding: 3vh 3vw;
+  animation: modal-in 200ms ease-out both;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.home-modal-card {
+  position: relative;
+  max-width: min(1080px, 94vw);
+  max-height: 92vh;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 5px 18px 5px 18px;
+  box-shadow: 8px 10px 0 rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.home-modal-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-bottom: 2.5px solid var(--ink);
+  background: var(--yellow);
+  flex: 0 0 auto;
+}
+
+.home-modal-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.8px;
+  color: var(--ink);
+}
+
+.home-modal-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 3px 8px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink-2);
+}
+
+.home-modal-close {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.home-modal-close:hover {
+  background: var(--blue);
+  color: #fff;
+}
+
+.home-modal-body {
+  overflow: auto;
+  padding: 14px;
+  background: var(--paper-2);
+}
+
+.home-modal-body img {
+  display: block;
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+}
+
+.home-modal-note {
+  font-size: 11.5px;
+  color: var(--ink-2);
+  padding: 10px 14px 12px;
+  border-top: 2px dashed var(--line);
+  background: var(--paper);
+  line-height: 1.6;
+  flex: 0 0 auto;
+}
+
+/* ══════════════════ 3. 创作界面：返回首页入口 ══════════════════ */
+/* 创作界面的「← 返回首页」按钮复用 .section-frame__back（左上角浮钮，
+   与音乐墙/社区栏目一致），定义见下方「栏目跳转容器」一节，这里不再单独写样式。 */
+
+/* ─────────────────────────────────────────────────────────────
+   栏目跳转容器（iframe）：首页「音乐墙 / 社区」卡片跳进来的独立页面。
+   队友的栏目是各自独立的静态页，用 iframe 原样加载，代码互不干扰。
+   ───────────────────────────────────────────────────────────── */
+.section-frame {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: #fff;
+}
+.section-frame__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+/* 浮在栏目页面左上角的「返回首页」 */
+.section-frame__back {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 28, 88, 0.92);
+  color: #fff;
+  font: 600 15px/1 "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(23, 28, 88, 0.28);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.section-frame__back:hover {
+  background: #171c58;
+  transform: translateY(-1px);
+}
+.section-frame__back:active {
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   我的资料弹窗（头像裁切 + 昵称）
+   ───────────────────────────────────────────────────────────── */
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  background: rgba(11, 27, 58, 0.55);
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+  animation: modal-in 180ms ease-out both;
+}
+
+.profile-card {
+  width: min(400px, 94vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--paper);
+  border: 3px solid var(--ink);
+  border-radius: 6px 20px 6px 20px;
+  box-shadow: 8px 10px 0 rgba(0, 0, 0, 0.26);
+  font-family: var(--font-body);
+}
+
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--yellow);
+  border-bottom: 2.5px solid var(--ink);
+}
+
+.profile-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  letter-spacing: 0.8px;
+  color: var(--ink);
+}
+
+.profile-close {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+
+.profile-close:hover {
+  background: var(--ink);
+  color: #fff;
+}
+
+.profile-body {
+  padding: 16px 16px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profile-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--ink-2);
+  margin-bottom: 6px;
+}
+
+.profile-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 11px;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+}
+
+.profile-input:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 1px;
+}
+
+/* 圆形裁切区 */
+.profile-crop {
+  position: relative;
+  width: 236px;
+  height: 236px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--ink);
+  background: repeating-conic-gradient(#e6e8ea 0% 25%, #f6f7f6 0% 50%) 50% / 18px 18px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.profile-crop.is-dragging {
+  cursor: grabbing;
+}
+
+.profile-crop img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.profile-crop-ph {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #121216;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 62px;
+  letter-spacing: 1px;
+  user-select: none;
+}
+
+.profile-tools {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.profile-btn {
+  flex: 1;
+  padding: 9px 10px;
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.profile-btn:hover {
+  background: var(--blue-soft);
+}
+
+.profile-btn:active {
+  transform: translateY(1px);
+}
+
+.profile-btn--ghost {
+  background: var(--paper-2);
+}
+
+.profile-btn--primary {
+  background: var(--blue);
+  color: #fff;
+}
+
+.profile-btn--primary:hover {
+  background: #2a3aa0;
+}
+
+.profile-zoom {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.profile-zoom input[type="range"] {
+  flex: 1;
+  accent-color: var(--blue);
+}
+
+.profile-hint {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.55;
+  color: var(--ink-3);
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px 16px;
+}

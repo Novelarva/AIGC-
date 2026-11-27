@@ -1,0 +1,1773 @@
+/* ══════════════════════════════════════════════════════════
+   积木音乐 / BlockMusic —— 全局样式
+   视觉语言：拼贴剪纸（Collage / Paper-cut）
+
+   主蓝 #075EEB · 亮黄 #FFD429 · 纸白 #F4F1E9 · 墨蓝 #0B1B3A
+   构成手法：纸张底 + 墨色粗描边 + 硬边投影（贴纸感）
+             + 半调网点 + 记号笔高亮 + 轻微旋转
+   ══════════════════════════════════════════════════════════ */
+
+@import url("https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700;800&display=swap");
+
+:root {
+  /* —— 品牌色 —— */
+  --blue: #075eeb;
+  --blue-deep: #0446b0;
+  --blue-soft: #dfe9ff;
+  --yellow: #ffd429;
+  --yellow-deep: #c99b00;
+  --pink: #ff5c8a;
+  --red: #e6332a;
+
+  /* —— 纸张 —— */
+  --paper: #f4f1e9;
+  --paper-2: #ffffff;
+  --paper-3: #ece7db;
+
+  /* —— 墨色文字 —— */
+  --ink: #0b1b3a;
+  --ink-2: #47547a;
+  --ink-3: #8b93ab;
+
+  --line: rgba(11, 27, 58, 0.18);
+  --line-soft: rgba(11, 27, 58, 0.1);
+
+  /* 贴纸硬投影：剪纸/丝网印的错位感，而不是柔光 */
+  --lift: 3px 3px 0 rgba(11, 27, 58, 0.13);
+  --lift-big: 5px 6px 0 rgba(11, 27, 58, 0.16);
+
+  --radius: 14px;
+  --font-display: "Anton", Impact, "Haettenschweiler", "Arial Black", "PingFang SC", sans-serif;
+  --font-body: Inter, "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  color: var(--ink);
+  background-color: var(--paper);
+  /* 半调网点 + 两团品牌色晕染，像贴纸底下的纸 */
+  background-image:
+    radial-gradient(rgba(7, 94, 235, 0.11) 1.1px, transparent 1.2px),
+    radial-gradient(circle at 8% 4%, rgba(255, 212, 41, 0.42), transparent 24%),
+    radial-gradient(circle at 94% 96%, rgba(7, 94, 235, 0.1), transparent 26%);
+  background-size: 22px 22px, 100% 100%, 100% 100%;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: flex;
+  height: 100%;
+  width: 100%;
+}
+
+/* ══════════════ 左侧积木库 ══════════════ */
+.library {
+  width: 286px;
+  flex-shrink: 0;
+  /* 顶部留白加大：让 BLOCKS 标志落到左上角「← 返回首页」浮钮下方，不重叠；
+     左侧仍可上下滚动（overflow-y:auto 不变） */
+  padding: 56px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--paper-2);
+  border-right: 2px solid var(--ink);
+  overflow-y: auto;
+}
+
+/* 左上角直接贴上封面里的 BLOCKS + No Notes 贴图，原封不动 */
+.library .brand-sticker {
+  display: block;
+  width: 196px;
+  max-width: 100%;
+  height: auto;
+  margin: 2px 0 14px;
+  filter: drop-shadow(2px 3px 0 rgba(11, 27, 58, 0.12));
+}
+
+.lib-section {
+  margin-top: 10px;
+}
+
+.lib-section .sec-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 6px 2px 10px;
+  padding-bottom: 7px;
+  border-bottom: 1.5px dashed var(--line);
+}
+
+/* 编号贴纸：呼应首页卡片的 01 / 02 / 03 */
+.lib-section .sec-num {
+  flex: none;
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  color: var(--blue);
+  background: var(--yellow);
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+  padding: 3px 5px 2px;
+  transform: rotate(-3.5deg);
+}
+
+.lib-section .sec-title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  color: var(--ink);
+}
+
+/* 副标题单独占一行，标题行就不会被挤到换行 */
+.lib-section .sec-sub {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+.lib-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+/* 积木卡片 = 一张小纸片：白纸 + 墨边 + 错位硬影 + 顶部色条 */
+.lib-card {
+  position: relative;
+  border-radius: 11px;
+  padding: 13px 10px 10px;
+  min-height: 96px;
+  cursor: grab;
+  user-select: none;
+  background: var(--paper-2);
+  border: 1.5px solid var(--ink);
+  box-shadow: var(--lift);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  overflow: visible;
+}
+
+.lib-card::before {
+  content: "";
+  position: absolute;
+  left: -1.5px;
+  top: -1.5px;
+  right: -1.5px;
+  height: 5px;
+  background: currentColor;
+  border-top-left-radius: 11px;
+  border-top-right-radius: 11px;
+}
+
+.lib-card:active {
+  cursor: grabbing;
+}
+
+.lib-card:hover {
+  transform: translateY(-3px) rotate(-1.2deg);
+  box-shadow: var(--lift-big);
+}
+
+.lib-card.dragging-src {
+  opacity: 0.45;
+}
+
+.lib-card .icon {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+/* 真实贴图：节奏 / 音色积木整张就是美工贴图，占满卡片 */
+.lib-card.has-sticker {
+  padding: 7px 7px 9px;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lib-card.has-sticker .icon-sticker {
+  width: 100%;
+  max-width: 138px;
+  height: auto;
+  display: block;
+  pointer-events: none;
+}
+
+/* 品牌蓝圆形「+」——呼应首页卡片右下角的箭头钮 */
+.lib-card .lib-add {
+  position: absolute;
+  right: 7px;
+  top: 12px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  background: var(--blue);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 16px;
+  text-align: center;
+  border: 1.5px solid var(--ink);
+  opacity: 0;
+  transform: scale(0.6) rotate(-14deg);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  pointer-events: none;
+}
+
+.lib-card:hover .lib-add {
+  opacity: 1;
+  transform: scale(1) rotate(-14deg);
+}
+
+.lib-card .name {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.lib-card .en {
+  font-size: 10px;
+  color: var(--ink-3);
+  letter-spacing: 1px;
+}
+
+.lib-card .pattern-dots {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  opacity: 0.95;
+}
+
+.lib-card .wave-icon {
+  margin-top: 6px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.lib-card .wave-icon span {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+/* 三类积木 → 三支品牌色（在浅纸上都压深过，保证可读） */
+.lib-card.rhythm {
+  color: #d92753;
+}
+.lib-card.sound {
+  color: #1f4fd8;
+}
+.lib-card.modifier {
+  color: #b8850a;
+}
+
+/* —— 报纸褶皱质感：极淡的斜向折痕叠层 —— */
+.library,
+.center {
+  position: relative;
+}
+
+.library::before,
+.center::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    repeating-linear-gradient(135deg, rgba(11, 27, 58, 0.05) 0 1px, transparent 1px 10px),
+    repeating-linear-gradient(48deg, rgba(11, 27, 58, 0.03) 0 1px, transparent 1px 14px);
+  mix-blend-mode: multiply;
+}
+
+/* 报纸撕边感：不规则圆角 */
+.library {
+  border-radius: 3px 14px 4px 12px;
+}
+
+.center {
+  border-radius: 4px 3px 12px 4px;
+}
+
+/* —— 三段交界处的花纹装饰：缝线 + 音符押花带 —— */
+.library::after,
+.side-panel::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 13px;
+  z-index: 5;
+  pointer-events: none;
+  /* 中央一条虚线缝线 + 两侧交替的小押花点，做出"拼接纸带"的感觉 */
+  background-image:
+    linear-gradient(var(--blue) 0 0),
+    radial-gradient(circle at 50% 50%, var(--yellow) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 50% 50%, rgba(11, 27, 58, 0.28) 0 1.4px, transparent 1.9px);
+  background-repeat: no-repeat, repeat-y, repeat-y;
+  background-size: 0 0, 100% 26px, 100% 26px;
+  background-position: 0 0, 0 0, 0 13px;
+}
+
+.library::after {
+  right: -7px;
+  border-left: 1.5px dashed rgba(7, 94, 235, 0.45);
+}
+
+.side-panel::after {
+  left: -7px;
+  border-right: 1.5px dashed rgba(7, 94, 235, 0.45);
+}
+
+/* —— 封面同款四角贴纸 —— */
+.deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.97;
+  filter: drop-shadow(2px 3px 0 rgba(11, 27, 58, 0.1));
+}
+
+.deco-goodmusic {
+  top: 7px;
+  right: 10px;
+  width: 84px;
+  opacity: 0.92;
+}
+
+/* ══════════════ 中央区域 ══════════════ */
+.center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 12px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--paper-2);
+}
+
+.play-btn {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #fff;
+  background: var(--blue);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.play-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.play-btn.playing {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.project-name {
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 9px;
+  padding: 6px 9px;
+  max-width: 240px;
+}
+
+.project-name:hover,
+.project-name:focus {
+  border-color: var(--ink);
+  background: var(--paper-2);
+  outline: none;
+}
+
+.icon-btn {
+  height: 36px;
+  min-width: 36px;
+  border-radius: 9px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink-2);
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+  padding: 0 11px;
+  box-shadow: var(--lift);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--ink);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--lift-big);
+}
+
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.icon-btn.danger:hover:not(:disabled) {
+  background: var(--red);
+  color: #fff;
+  border-color: var(--ink);
+}
+
+.topbar .spacer {
+  flex: 1;
+}
+
+/* 按钮组贴右排列；「清空」正好落在右上角 GOOD MUSIC 贴纸的左边一点 */
+.topbar .toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 92px;
+}
+
+/* 发现新音色：黄色贴纸，歪一点贴上去 */
+.discover-banner {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 11px 22px;
+  border-radius: 10px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  font-size: 13px;
+  background: var(--yellow);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  animation: banner-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  pointer-events: none;
+  z-index: 50;
+}
+
+@keyframes banner-pop {
+  0% {
+    transform: translateX(-50%) rotate(-9deg) scale(0.6);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) rotate(-2deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ══════════════ 画布网格 ══════════════ */
+.canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  padding: 16px 20px 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 画布 = 一张方格纸 */
+.canvas-grid {
+  position: relative;
+  flex: 1;
+  border-radius: var(--radius);
+  border: 2px solid var(--ink);
+  background-color: var(--paper-2);
+  background-image: radial-gradient(rgba(7, 94, 235, 0.14) 1px, transparent 1.1px);
+  background-size: 18px 18px;
+  box-shadow: var(--lift-big);
+  overflow: hidden;
+  transition: box-shadow 0.15s ease;
+}
+
+.canvas-grid.drag-over {
+  box-shadow: 6px 7px 0 var(--blue);
+}
+
+.canvas-grid.drag-delete {
+  box-shadow: 6px 7px 0 var(--red);
+}
+
+.canvas-head {
+  display: grid;
+  grid-template-columns: 110px repeat(8, 1fr);
+  font-size: 11px;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+  padding: 0 6px;
+}
+
+.canvas-head .step-label {
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.lane-labels {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 110px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.lane-labels .lane-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 14px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  border-right: 1.5px dashed var(--line);
+}
+
+.drop-zone {
+  position: absolute;
+  left: 110px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  /* 小节线：过门用蓝线，和品牌蓝一致 */
+  background: repeating-linear-gradient(
+    to right,
+    rgba(7, 94, 235, 0.24) 0,
+    rgba(7, 94, 235, 0.24) 1px,
+    transparent 1px,
+    transparent calc(100% / 8)
+  );
+}
+
+/* 播放线：品牌蓝实线，压一道黄影子 */
+.playline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--blue);
+  box-shadow: 2px 0 0 var(--yellow);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.playline::after {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 9px solid var(--blue);
+}
+
+/* ══════════════ 时间轴翻页 ══════════════ */
+/* 一枚小蓝圆圈，中间一个白箭头，钉在画布右边框的中间。
+   下一页常驻；翻过页之后上一页也在右边框上出现，两颗上下成一对。
+   （左边框放不下 —— 那儿整条都是 Lane 标签，会被按钮压掉半个字。） */
+.canvas-wrap .page-btn {
+  --shift: 0px;
+  position: absolute;
+  top: calc(50% + 2px);
+  right: 4px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: var(--blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 12;
+  transform: translateY(calc(-50% + var(--shift)));
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+/* 两颗都有时上下排开，整对骑在边框中点两侧 */
+.canvas-wrap.has-prev .page-btn.prev {
+  --shift: -23px;
+}
+
+.canvas-wrap.has-prev .page-btn.next {
+  --shift: 23px;
+}
+
+.canvas-wrap .page-btn:hover {
+  background: #2f7bff;
+  transform: translateY(calc(-50% + var(--shift))) translateY(-2px) scale(1.06);
+  box-shadow: 4px 5px 0 var(--ink);
+}
+
+.canvas-wrap .page-btn:active {
+  transform: translateY(calc(-50% + var(--shift))) scale(0.94);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.canvas-wrap .page-btn:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+
+/* 白箭头：一个转 45° 的方块，只留上边和右边两条描边 */
+.canvas-wrap .page-btn .arw {
+  width: 9px;
+  height: 9px;
+  border-top: 3px solid #fff;
+  border-right: 3px solid #fff;
+  border-radius: 1px;
+  transform: rotate(45deg) translate(-1px, 1px);
+}
+
+.canvas-wrap .page-btn.prev .arw {
+  transform: rotate(-135deg) translate(-1px, 1px);
+}
+
+/* 页码标记：像一张斜贴上去的小纸片 */
+.canvas-grid .page-badge {
+  position: absolute;
+  left: 12px;
+  top: 2px;
+  z-index: 6;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.6px;
+  color: var(--blue);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 5px;
+  padding: 3px 6px;
+  box-shadow: 2px 2px 0 rgba(11, 27, 58, 0.5);
+  transform: rotate(-2deg);
+}
+
+.canvas-grid .page-badge .of {
+  color: var(--ink-3);
+  font-size: 9px;
+  margin-left: 1px;
+}
+
+.step-highlight {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(7, 94, 235, 0.07);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* —— 放置的积木 = 贴在方格纸上的小色片 —— */
+.placed-block {
+  position: absolute;
+  border-radius: 11px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 7px 9px;
+  cursor: grab;
+  user-select: none;
+  z-index: 10;
+  overflow: visible;
+  transition: transform 0.12s ease, box-shadow 0.2s ease;
+}
+
+.placed-block:active {
+  cursor: grabbing;
+}
+
+.placed-block .pb-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.placed-block .pb-name {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-top: 4px;
+  color: var(--ink);
+}
+
+.placed-block .pb-tag {
+  font-size: 9px;
+  letter-spacing: 1px;
+  opacity: 0.9;
+  margin-top: 2px;
+  font-weight: 700;
+}
+
+.placed-block .pb-dots {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  opacity: 0.9;
+  margin-top: 3px;
+}
+
+.placed-block.active-hit {
+  animation: hit-pulse 0.3s ease;
+}
+
+@keyframes hit-pulse {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.09);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.placed-block.clicked {
+  animation: click-pulse 0.32s ease;
+}
+
+@keyframes click-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid currentColor;
+  pointer-events: none;
+  animation: ripple-out 0.6s ease-out forwards;
+}
+
+@keyframes ripple-out {
+  0% {
+    opacity: 0.8;
+    width: 12px;
+    height: 12px;
+  }
+  100% {
+    opacity: 0;
+    width: 90px;
+    height: 90px;
+  }
+}
+
+.empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-3);
+  pointer-events: none;
+  text-align: center;
+  padding: 20px;
+}
+
+/* 空画布提示 = 一张歪贴的黄色贴纸 */
+.empty-hint .big {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 9px;
+  padding: 8px 16px;
+  transform: rotate(-1.6deg);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.empty-hint .small {
+  font-size: 12px;
+  margin-top: 10px;
+  max-width: 340px;
+  line-height: 1.7;
+}
+
+/* 连接线层（SVG） */
+.link-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.link-layer line.halo {
+  stroke: #ffffff;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+
+.link-layer line.wire {
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-dasharray: 5 7;
+  animation: dash-flow 1.2s linear infinite;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -13;
+  }
+}
+
+/* ══════════════ 底部 transport ══════════════ */
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  border-top: 2px solid var(--ink);
+  background: var(--paper-2);
+}
+
+.transport-status {
+  width: 156px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-3);
+}
+
+.transport-status .ts-main {
+  min-height: 15px;
+}
+
+.transport-status .ts-sub {
+  color: var(--yellow-deep);
+  font-weight: 800;
+}
+
+.wave-canvas {
+  flex: 1;
+  height: 46px;
+  border-radius: 9px;
+  background: var(--blue-soft);
+  border: 1.5px solid var(--ink);
+}
+
+.mini-play {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 13px;
+  box-shadow: var(--lift);
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.mini-play:hover {
+  background: var(--yellow);
+  transform: translate(-1px, -1px);
+}
+
+/* ══════════════ 右侧组合面板 ══════════════ */
+.side-panel {
+  position: relative;
+  width: 290px;
+  flex-shrink: 0;
+  padding: 20px 16px;
+  border-left: 2px solid var(--ink);
+  background: var(--paper-2);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-card {
+  border-radius: var(--radius);
+  border: 1.5px solid var(--ink);
+  background: var(--paper-2);
+  padding: 14px;
+  box-shadow: var(--lift);
+}
+
+.panel-card h3 {
+  margin: 0 0 11px;
+  padding-bottom: 8px;
+  border-bottom: 1.5px dashed var(--line);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: var(--ink);
+}
+
+.combo-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  animation: combo-in 0.4s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+@keyframes combo-in {
+  0% {
+    transform: translateY(8px) rotate(-2deg) scale(0.94);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) rotate(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.combo-item .eq {
+  color: var(--ink-3);
+}
+
+.combo-item .result {
+  margin-left: auto;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  color: var(--blue);
+}
+
+.hint-list .combo-item .result.unknown {
+  color: var(--ink-3);
+  letter-spacing: 3px;
+}
+
+.panel-empty {
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 6px 2px;
+  line-height: 1.6;
+}
+
+/* 音色预览：一张贴纸圆盘 */
+.preview-orb {
+  position: relative;
+  height: 130px;
+  border-radius: 13px;
+  overflow: hidden;
+  background-color: var(--blue-soft);
+  background-image: radial-gradient(rgba(7, 94, 235, 0.22) 1.1px, transparent 1.2px);
+  background-size: 14px 14px;
+  border: 1.5px solid var(--ink);
+}
+
+.preview-orb .orb-core {
+  position: absolute;
+  left: 50%;
+  top: 55%;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--blue);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 rgba(11, 27, 58, 0.28);
+  transition: transform 0.15s ease;
+}
+
+.preview-orb.playing .orb-core {
+  animation: orb-breathe 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes orb-breathe {
+  from {
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+  to {
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+.preview-orb .particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 1px solid var(--ink);
+  opacity: 0;
+}
+
+.preview-orb.playing .particle {
+  animation: float-p 2.6s ease-in-out infinite;
+}
+
+@keyframes float-p {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  20% {
+    opacity: 0.95;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px);
+  }
+}
+
+/* ══════════════ 新手教程 ══════════════ */
+.tutorial-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 22px;
+  border-top: 2px solid var(--ink);
+  background: var(--yellow);
+}
+
+.tutorial-bar .steps {
+  display: flex;
+  gap: 18px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.tut-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.tut-step .num {
+  width: 23px;
+  height: 23px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--ink);
+  transform: rotate(-3deg);
+}
+
+.tutorial-bar .motto {
+  font-size: 12px;
+  color: var(--ink);
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* ══════════════ 响应式 ══════════════ */
+@media (max-width: 1100px) {
+  .side-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  body {
+    overflow: auto;
+  }
+  .app {
+    flex-direction: column;
+    height: auto;
+    min-height: 100%;
+  }
+  .library {
+    width: 100%;
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-right: none;
+    border-bottom: 2px solid var(--ink);
+    max-height: none;
+  }
+  .lib-section {
+    flex: 1;
+    min-width: 220px;
+  }
+  .center {
+    min-height: 70vh;
+  }
+  .lane-labels {
+    width: 74px;
+  }
+  .drop-zone {
+    left: 74px;
+  }
+  .canvas-head {
+    grid-template-columns: 74px repeat(8, 1fr);
+  }
+  .tutorial-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   曲绘（Artwork）—— 拼贴剪纸语言，与界面同源
+   ══════════════════════════════════════════════ */
+
+/* 「完成」按钮 —— 主操作：品牌蓝贴纸 */
+.icon-btn.finish {
+  background: var(--blue);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 2px solid var(--ink);
+  padding: 0 15px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.icon-btn.finish:hover:not(:disabled) {
+  background: var(--blue-deep);
+  color: #fff;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+.icon-btn.finish:disabled {
+  background: var(--paper-3);
+  color: var(--ink-3);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+/* 曲绘弹窗 */
+.art-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(11, 27, 58, 0.55);
+  backdrop-filter: blur(5px);
+  animation: artFade 0.28s ease both;
+}
+
+@keyframes artFade {
+  from {
+    opacity: 0;
+  }
+}
+
+.art-modal {
+  display: flex;
+  gap: 28px;
+  width: min(1020px, 94vw);
+  max-height: 92vh;
+  padding: 26px;
+  border-radius: 18px;
+  overflow: auto;
+  background: var(--paper-2);
+  border: 2px solid var(--ink);
+  box-shadow: 10px 10px 0 rgba(11, 27, 58, 0.18);
+  animation: artRise 0.34s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+
+@keyframes artRise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98) rotate(-0.6deg);
+  }
+}
+
+.art-left {
+  flex: none;
+  width: 400px;
+  max-width: 42vw;
+}
+
+.art-canvas {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  box-shadow: var(--lift);
+}
+
+.art-canvas svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.art-canvas .art-el {
+  opacity: 0;
+  transform: scale(0.55);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: artPop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes artPop {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.art-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.art-fp {
+  color: var(--blue);
+  font-family: ui-monospace, Consolas, monospace;
+}
+
+.art-right {
+  flex: 1;
+  min-width: 260px;
+  display: flex;
+  flex-direction: column;
+}
+
+.art-kicker {
+  font-size: 10px;
+  letter-spacing: 3px;
+  font-weight: 800;
+  color: var(--pink);
+}
+
+.art-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  margin: 8px 0 6px;
+  color: var(--blue);
+  line-height: 1.05;
+}
+
+.art-keys {
+  font-size: 11px;
+  letter-spacing: 1.6px;
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.art-lines {
+  margin-top: 18px;
+}
+
+.art-lines p {
+  font-size: 14px;
+  line-height: 1.95;
+  margin: 0 0 10px;
+  color: var(--ink);
+}
+
+.art-lines p.dim {
+  font-size: 13px;
+  color: var(--ink-2);
+}
+
+.art-compo {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1.5px dashed var(--line);
+}
+
+.compo-head {
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: var(--ink-3);
+  margin-bottom: 11px;
+}
+
+.compo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.compo-name {
+  width: 40px;
+  flex: none;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.compo-track {
+  flex: 1;
+  height: 9px;
+  border-radius: 3px;
+  background: var(--paper-3);
+  border: 1.5px solid var(--ink);
+  overflow: hidden;
+}
+
+.compo-track i {
+  display: block;
+  height: 100%;
+  transition: width 0.6s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.art-actions {
+  margin-top: auto;
+  padding-top: 20px;
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.art-btn {
+  height: 38px;
+  padding: 0 16px;
+  border-radius: 9px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: inherit;
+  box-shadow: var(--lift);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.art-btn:hover {
+  background: var(--yellow);
+  transform: translate(-1px, -1px);
+  box-shadow: var(--lift-big);
+}
+
+.art-btn.primary {
+  background: var(--blue);
+  color: #fff;
+  border-width: 2px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.art-btn.primary:hover {
+  background: var(--blue-deep);
+  color: #fff;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+
+@media (max-width: 900px) {
+  .art-modal {
+    flex-direction: column;
+  }
+  .art-left {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   音乐扩展（Suno）入口按钮 + 弹窗
+   ══════════════════════════════════════════════ */
+
+/* 顶栏「扩成曲子」按钮：粉色主操作，和「完成」(蓝) 区分开 */
+.icon-btn.extend {
+  background: var(--pink);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: 2px solid var(--ink);
+  padding: 0 14px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.icon-btn.extend:hover:not(:disabled) {
+  background: #e8456f;
+  color: #fff;
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--ink);
+}
+.icon-btn.extend:disabled {
+  background: var(--paper-3);
+  color: var(--ink-3);
+  border-color: var(--line);
+  box-shadow: none;
+}
+
+/* 演示模式提示条 */
+.ext-mock {
+  margin-top: 10px;
+  padding: 8px 11px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  background: var(--yellow);
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  box-shadow: var(--lift);
+}
+
+.ext-label {
+  margin-top: 14px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  font-weight: 800;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+
+/* 提示词预览框 */
+.ext-prompt {
+  margin-top: 8px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: var(--lift);
+}
+
+.ext-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+.ext-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  padding: 4px 11px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+}
+.ext-hint {
+  margin-top: 12px;
+}
+
+/* 进度条 */
+.ext-stage {
+  margin-top: 14px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--blue);
+}
+.ext-progress {
+  margin-top: 12px;
+  height: 14px;
+  border-radius: 8px;
+  border: 2px solid var(--ink);
+  background: var(--paper-3);
+  overflow: hidden;
+}
+.ext-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--blue), var(--pink));
+  transition: width 0.4s ease;
+}
+.ext-pct {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 结果区 */
+.ext-result {
+  margin-top: 14px;
+}
+.ext-audio {
+  width: 100%;
+  height: 42px;
+}
+.ext-meta-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.ext-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  cursor: pointer;
+}
+.ext-toggle input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--blue);
+}
+
+.ext-publish-msg {
+  margin-top: 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--blue-deep);
+}
+
+.ext-error {
+  margin-top: 14px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+}
+
+/* ── 曲绘完成界面里的「扩展成完整音乐」入口（从顶栏迁移过来）── */
+.art-extend-cta {
+  margin-top: 18px;
+}
+.art-extend-divider {
+  height: 2px;
+  background: var(--line);
+  border-radius: 2px;
+  margin-bottom: 14px;
+}
+.art-btn.extend-full {
+  width: 100%;
+  font-size: 15px;
+  padding: 13px 16px;
+  background: linear-gradient(90deg, var(--blue), var(--pink));
+  color: #fff;
+}
+.art-extend-note {
+  margin-top: 10px;
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+/* 预览里的统计行（积木标签数量 / 情绪层数 / 目标时长） */
+.ext-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+.ext-stats span {
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* 生成后「起名」输入框 */
+.ext-name-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 11px 13px;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+}
+.ext-name-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.ext-name {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  outline: none;
+}
+.ext-name::placeholder {
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+/* ── 游戏界面底部「扩展中」进度条（与扩展弹窗内的进度同步）── */
+.ext-gamebar {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  z-index: 60;
+  width: min(680px, 90vw);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 14px 18px;
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: var(--lift);
+}
+.ext-gamebar-label {
+  flex-basis: 100%;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ext-gamebar-track {
+  flex: 1;
+  min-width: 0;
+  height: 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--ink);
+  background: var(--paper-3);
+  overflow: hidden;
+}
+.ext-gamebar-fill {
+  height: 100%;
+  background-image: linear-gradient(90deg, var(--blue), var(--pink), var(--blue));
+  background-size: 200% 100%;
+  animation: ext-flow 1.4s linear infinite;
+  transition: width 0.4s ease;
+}
+.ext-gamebar-pct {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+@keyframes ext-flow {
+  0% { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+
+
+
+.lib-card .lib-add {
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: auto;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+}
+.lib-card:hover .lib-add,
+.lib-card:focus-within .lib-add { opacity: 1; }
+.lib-card .lib-add:focus-visible { outline: 3px solid var(--yellow); outline-offset: 2px; }
+.canvas-message {
+  position: absolute; z-index: 12; left: 50%; bottom: 12px; transform: translateX(-50%);
+  max-width: calc(100% - 24px); padding: 9px 14px; border: 2px solid var(--ink); border-radius: 10px;
+  color: var(--ink); background: var(--yellow); box-shadow: var(--lift); font-size: 12px; font-weight: 800;
+  text-align: center; pointer-events: none; animation: canvas-message-in 180ms ease-out both;
+}
+@keyframes canvas-message-in { from { opacity: 0; transform: translate(-50%, 6px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@media (max-width: 600px) {
+  .library { padding: 18px 12px; gap: 12px; }
+  .library .brand-sticker { width: 148px; margin-bottom: 4px; }
+  .lib-section { min-width: min(100%, 260px); }
+  .lib-grid { gap: 8px; }
+  .lib-card .lib-add { opacity: 1; width: 28px; height: 28px; top: 5px; right: 5px; font-size: 18px; }
+  .center { min-height: 66vh; padding: 12px; }
+  .canvas-wrap { min-height: 260px !important; }
+  .canvas-wrap .page-btn { z-index: 10; }
+}
+@media (prefers-reduced-motion: reduce) { .canvas-message { animation: none; } }
